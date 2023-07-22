@@ -47,70 +47,93 @@ var InputExtensions = append(FileExtensions, "stdin")
 
 const defaultHttpGetAttempts = 3
 const pathNotExistError = "the path %q does not exist"
-
+/*
+	如下代码定义了Builder结构体，用于提供方便的功能，将命令行参数和参数转换为要使用Visitor接口迭代的资源列表。
+	Builder结构体提供了一些便捷的方法，用于从命令行参数和参数中提取资源，并将其转换为要使用Visitor接口迭代的资源列表。它还包含了一些与资源处理相关的字段和方法，用于方便地处理和操作资源。
+	总的来说，Builder结构体用于提供方便的功能，将命令行参数和参数转换为要使用Visitor接口迭代的资源列表，并提供了一些与资源处理相关的字段和方法。它可以方便地处理和操作资源，并提供了一些便捷的方法来处理和操作资源。
+*/
 // Builder provides convenience functions for taking arguments and parameters
 // from the command line and converting them to a list of resources to iterate
 // over using the Visitor interface.
 type Builder struct {
+	//	- categoryExpanderFn：CategoryExpanderFunc类型的函数，用于扩展资源类别。
 	categoryExpanderFn CategoryExpanderFunc
-
+	//	- mapper：mapper类型的对象，用于映射对象。
 	// mapper is set explicitly by resource builders
 	mapper *mapper
-
+	//  - clientConfigFn：ClientConfigFunc类型的函数，用于生成客户端配置。
 	// clientConfigFn is a function to produce a client, *if* you need one
 	clientConfigFn ClientConfigFunc
-
+	// - restMapperFn：RESTMapperFunc类型的函数，用于将资源和API组版本映射到RESTMapper。
 	restMapperFn RESTMapperFunc
-
+	// - objectTyper：runtime.ObjectTyper类型的对象，用于确定对象类型。
 	// objectTyper is statically determinant per-command invocation based on your internal or unstructured choice
 	// it does not ever need to rely upon discovery.
 	objectTyper runtime.ObjectTyper
-
+	//  - negotiatedSerializer：runtime.NegotiatedSerializer类型的对象，用于序列化和反序列化对象。
 	// codecFactory describes which codecs you want to use
 	negotiatedSerializer runtime.NegotiatedSerializer
-
+	//  - local：标志是否只能在本地执行，不能进行服务器调用。
 	// local indicates that we cannot make server calls
 	local bool
-
+	//  - errs：存储错误信息的切片。
 	errs []error
-
+	//	- paths：存储Visitor对象的切片，用于迭代资源。
 	paths      []Visitor
+	//  - stream：标志是否使用流式处理。
 	stream     bool
+	//	- stdinInUse：标志是否正在使用标准输入。
 	stdinInUse bool
+	//	- dir：标志是否处理目录。
 	dir        bool
-
+	//	- visitorConcurrency：Visitor并发数。
 	visitorConcurrency int
-
+	//	- labelSelector：标签选择器。
 	labelSelector     *string
+	//	- fieldSelector：字段选择器。
 	fieldSelector     *string
+	//	- selectAll：标志是否选择所有资源。
 	selectAll         bool
+	//	- limitChunks：限制处理的资源块数量。
 	limitChunks       int64
+	//   - requestTransforms：请求转换列表。
 	requestTransforms []RequestTransform
-
+	//   - resources：资源列表。
 	resources   []string
+	//   - subresource：子资源。
 	subresource string
-
+	//   - namespace：命名空间。
 	namespace    string
+	//	- allNamespace：标志是否处理所有命名空间。
 	allNamespace bool
+	//	- names：名称列表。
 	names        []string
-
+	//	- resourceTuples：资源元组列表。
 	resourceTuples []resourceTuple
-
+	//	- defaultNamespace：标志是否使用默认命名空间。
 	defaultNamespace bool
+	//	- requireNamespace：标志是否要求命名空间。
 	requireNamespace bool
-
+	//	- flatten：标志是否展平结果。
 	flatten bool
-	latest  bool
 
+	//	- latest：标志是否使用最新版本。
+	latest  bool
+	//  - requireObject：标志是否需要对象。
 	requireObject bool
 
+	//  - singleResourceType：标志是否只有一个资源类型。
 	singleResourceType bool
-	continueOnError    bool
 
+	//  - continueOnError：标志是否在错误发生时继续执行。
+	continueOnError    bool
+	//  - singleItemImplied：标志是否隐含只有一个资源。
 	singleItemImplied bool
 
+	//   - schema：ContentValidator类型的对象，用于验证内容。
 	schema ContentValidator
 
+	//   - fakeClientFn：用于测试的FakeClientFunc类型的函数。
 	// fakeClientFn is used for testing
 	fakeClientFn FakeClientFunc
 }
@@ -241,7 +264,14 @@ func (b *Builder) VisitorConcurrency(concurrency int) *Builder {
 	b.visitorConcurrency = concurrency
 	return b
 }
+/*
+	如下代码是Kubernetes（k8s）中的一个函数，用于处理文件名参数。函数接受两个参数：enforceNamespace和filenameOptions。
 
+	接下来，遍历filenameOptions中的文件路径paths。根据路径的不同情况进行处理：
+	最后，如果filenameOptions中指定了Kustomize路径（filenameOptions.Kustomize不为空），创建一个KustomizeVisitor对象并将其添加到Builder的paths字段中。
+	如果enforceNamespace为true，调用Builder的RequireNamespace方法。
+	最后返回Builder。
+*/
 // FilenameParam groups input in two categories: URLs and files (files, directories, STDIN)
 // If enforceNamespace is false, namespaces in the specs will be allowed to
 // override the default namespace. If it is true, namespaces that don't match
@@ -249,16 +279,21 @@ func (b *Builder) VisitorConcurrency(concurrency int) *Builder {
 // If ContinueOnError() is set prior to this method, objects on the path that are not
 // recognized will be ignored (but logged at V(2)).
 func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *FilenameOptions) *Builder {
+	// 首先对filenameOptions进行校验，如果有错误则将错误信息添加到Builder的errs字段中，并返回Builder。
 	if errs := filenameOptions.validate(); len(errs) > 0 {
 		b.errs = append(b.errs, errs...)
 		return b
 	}
+	// 是否递归处理
 	recursive := filenameOptions.Recursive
 	paths := filenameOptions.Filenames
+	// 接下来，遍历filenameOptions中的文件路径paths。根据路径的不同情况进行处理：
 	for _, s := range paths {
 		switch {
+		// 如果路径为"-"，表示从标准输入读取对象，调用Builder的Stdin方法。
 		case s == "-":
 			b.Stdin()
+		// 如果路径以"http://"或"https://"开头，表示是一个URL地址，将URL解析为url.URL对象，并调用Builder的URL方法。
 		case strings.Index(s, "http://") == 0 || strings.Index(s, "https://") == 0:
 			url, err := url.Parse(s)
 			if err != nil {
@@ -266,6 +301,8 @@ func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *Filename
 				continue
 			}
 			b.URL(defaultHttpGetAttempts, url)
+		// 其他情况下，调用expandIfFilePattern函数对路径进行模式匹配展开，获取匹配的文件列表matches。
+		// 如果不递归展开（recursive为false）且只有一个匹配，将singleItemImplied字段设置为true。然后调用Builder的Path方法。
 		default:
 			matches, err := expandIfFilePattern(s)
 			if err != nil {
@@ -278,6 +315,7 @@ func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *Filename
 			b.Path(recursive, matches...)
 		}
 	}
+	// 最后，如果filenameOptions中指定了Kustomize路径（filenameOptions.Kustomize不为空），创建一个KustomizeVisitor对象并将其添加到Builder的paths字段中。
 	if filenameOptions.Kustomize != "" {
 		b.paths = append(
 			b.paths,
@@ -288,11 +326,12 @@ func (b *Builder) FilenameParam(enforceNamespace bool, filenameOptions *Filename
 				fSys:    filesys.MakeFsOnDisk(),
 			})
 	}
-
+	// 如果enforceNamespace为true，调用Builder的RequireNamespace方法。
 	if enforceNamespace {
 		b.RequireNamespace()
 	}
 
+	// 最后返回Builder
 	return b
 }
 
@@ -416,37 +455,49 @@ func (b *Builder) Stream(r io.Reader, name string) *Builder {
 	b.paths = append(b.paths, NewStreamVisitor(r, b.mapper, name, b.schema))
 	return b
 }
-
+/*
+	如下代码定义了Builder结构体的Path方法。该方法接受一组路径作为参数，这些路径可以是文件或目录（都可以包含一个或多个资源）。
+	对于每个文件，创建一个FileVisitor，然后将每个FileVisitor的内容流式传输给StreamVisitor。如果在调用此方法之前设置了ContinueOnError()，则路径上的无法识别的对象将被忽略（但在V(2)级别记录日志）。
+	总的来说，该方法的作用是处理传入的路径参数，将每个路径解析为对应的FileVisitor，并将其添加到Builder的路径列表中。在解析过程中，会检查路径是否存在和是否有错误，并根据情况设置相关字段。
+*/
 // Path accepts a set of paths that may be files, directories (all can containing
 // one or more resources). Creates a FileVisitor for each file and then each
 // FileVisitor is streaming the content to a StreamVisitor. If ContinueOnError() is set
 // prior to this method being called, objects on the path that are unrecognized will be
 // ignored (but logged at V(2)).
 func (b *Builder) Path(recursive bool, paths ...string) *Builder {
+	// 遍历传入的路径列表。
 	for _, p := range paths {
+		// 使用os.Stat检查路径是否存在。
 		_, err := os.Stat(p)
 		if os.IsNotExist(err) {
+			// 如果路径不存在，则将错误信息添加到errs字段中，并继续下一个路径的处理。
 			b.errs = append(b.errs, fmt.Errorf(pathNotExistError, p))
 			continue
 		}
+		// 如果出现其他错误，则将错误信息添加到errs字段中，并继续下一个路径的处理。
 		if err != nil {
 			b.errs = append(b.errs, fmt.Errorf("the path %q cannot be accessed: %v", p, err))
 			continue
 		}
-
+		// 调用ExpandPathsToFileVisitors函数将路径扩展为FileVisitor列表。该函数会根据文件扩展名、递归标志等参数解析路径，并返回对应的FileVisitor列表。
 		visitors, err := ExpandPathsToFileVisitors(b.mapper, p, recursive, FileExtensions, b.schema)
+		// 如果出现错误，则将错误信息添加到errs字段中。
 		if err != nil {
 			b.errs = append(b.errs, fmt.Errorf("error reading %q: %v", p, err))
 		}
+		//  如果返回的FileVisitor列表长度大于1，则设置dir字段为true，表示存在目录。
 		if len(visitors) > 1 {
 			b.dir = true
 		}
-
+		//  将返回的FileVisitor列表添加到paths字段中。
 		b.paths = append(b.paths, visitors...)
 	}
+	//  如果paths字段为空且errs字段也为空，则表示没有正确读取到任何资源文件，将错误信息添加到errs字段中。
 	if len(b.paths) == 0 && len(b.errs) == 0 {
 		b.errs = append(b.errs, fmt.Errorf("error reading %v: recognized file extensions are %v", paths, FileExtensions))
 	}
+	// 返回Builder对象。
 	return b
 }
 
@@ -1162,7 +1213,25 @@ func (b *Builder) visitByPaths() *Result {
 	result.sources = b.paths
 	return result
 }
+/*
+	这段代码定义了Builder结构体的Do方法。该方法返回一个Result对象，其中包含由Builder标识的资源的Visitor。该Visitor将遵循ContinueOnError指定的错误行为。注意，流输入会在第一次执行时被消耗 - 可以使用Result的Infos()或Object()方法来捕获进一步迭代的列表。
 
+具体的逻辑如下：
+
+1. 调用b.visitorResult()方法创建一个Result对象r，并将r的mapper字段设置为b.Mapper()返回的mapper对象。
+2. 如果r存在错误，直接返回r。
+3. 如果b.flatten为true，则将r的visitor字段设置为NewFlattenListVisitor(r.visitor, b.objectTyper, b.mapper)返回的Visitor对象。该Visitor用于将多个资源列表展平为单个资源列表。
+4. 创建一个helpers切片，用于存储VisitorFunc函数。
+5. 如果b.defaultNamespace为true，则将SetNamespace(b.namespace)函数添加到helpers切片中。该函数用于设置资源的默认命名空间为b.namespace。
+6. 如果b.requireNamespace为true，则将RequireNamespace(b.namespace)函数添加到helpers切片中。该函数用于要求资源具有b.namespace命名空间。
+7. 将FilterNamespace函数添加到helpers切片中。该函数用于过滤资源，只保留具有正确命名空间的资源。
+8. 如果b.requireObject为true，则将RetrieveLazy函数添加到helpers切片中。该函数用于检索懒加载的资源。
+9. 如果b.continueOnError为true，则将ContinueOnErrorVisitor{Visitor: r.visitor}设置为r的visitor字段。该Visitor用于在遇到错误时继续执行。
+10. 将NewDecoratedVisitor(r.visitor, helpers...)返回的Visitor对象设置为r的visitor字段。该Visitor用于应用一系列的VisitorFunc函数到资源上。
+11. 返回Result对象r。
+
+总的来说，Do方法的作用是根据Builder标识的资源创建一个Visitor，并应用一系列的VisitorFunc函数对资源进行处理。最后返回Result对象，其中包含了处理后的Visitor和其他相关信息。
+*/
 // Do returns a Result object with a Visitor for the resources identified by the Builder.
 // The visitor will respect the error behavior specified by ContinueOnError. Note that stream
 // inputs are consumed by the first execution - use Infos() or Object() on the Result to capture a list

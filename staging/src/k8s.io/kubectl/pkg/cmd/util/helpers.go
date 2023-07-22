@@ -659,9 +659,17 @@ func GetValidationDirective(cmd *cobra.Command) (string, error) {
 	}
 	return metav1.FieldValidationIgnore, nil
 }
-
+// k8s 中指定干预策略的类型，从而控制对集群的变更操作的执行方式
 type DryRunStrategy int
-
+/*
+	如下代码是在 Kubernetes (k8s) 中定义了一个枚举类型 `DryRunStrategy`，以及三个枚举常量 `DryRunNone`、`DryRunClient` 和 `DryRunServer`。
+	- `DryRunNone` 表示客户端将执行所有的变更调用，包括创建、更新和删除等。
+	- `DryRunClient` 表示客户端将阻止执行像创建、更新和删除等具有变更性质的调用。在客户端干预策略中，变更操作将被模拟执行，但不会实际应用到集群中。
+	- `DryRunServer` 表示客户端将发送变更调用到 API 服务器，并使用 `dry-run` 参数来阻止持久化更改。在服务器端干预策略中，
+      变更操作将被发送到 API 服务器进行模拟执行，但不会实际应用到集群中。需要注意的是，发送服务器端干预策略的客户端应该验证 API 服务器和资源是否支持服务器端干预策略，
+	  如果不支持，则应该提前失败。如果客户端向不支持服务器端干预策略的 API 服务器发送服务器端干预策略的调用，则 API 服务器将意外地持久化更改。
+	通过使用这些枚举常量，可以在 k8s 中指定干预策略的类型，从而控制对集群的变更操作的执行方式。
+*/
 const (
 	// DryRunNone indicates the client will make all mutating calls
 	DryRunNone DryRunStrategy = iota

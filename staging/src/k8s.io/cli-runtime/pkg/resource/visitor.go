@@ -499,40 +499,54 @@ func FileVisitorForSTDIN(mapper *mapper, schema ContentValidator) Visitor {
 		StreamVisitor: NewStreamVisitor(nil, mapper, constSTDINstr, schema),
 	}
 }
-
+/*
+	如下代码定义了ExpandPathsToFileVisitors函数，用于将给定的路径解析为FileVisitor的切片。
+	FileVisitor用于处理从提供的路径中打开的文件，并将io.Reader传递给StreamVisitor进行读取（也处理了标准输入）。路径参数还可以接受单个文件，并返回单个FileVisitor。
+	总的来说，ExpandPathsToFileVisitors函数的作用是将给定的路径解析为FileVisitor的切片。
+	它会遍历路径下的文件和子目录，对于每个文件，创建一个FileVisitor，并根据路径创建一个StreamVisitor，并将FileVisitor添加到visitors切片中。最后返回visitors切片作为结果。
+*/
 // ExpandPathsToFileVisitors will return a slice of FileVisitors that will handle files from the provided path.
 // After FileVisitors open the files, they will pass an io.Reader to a StreamVisitor to do the reading. (stdin
 // is also taken care of). Paths argument also accepts a single file, and will return a single visitor
 func ExpandPathsToFileVisitors(mapper *mapper, paths string, recursive bool, extensions []string, schema ContentValidator) ([]Visitor, error) {
+	// 定义一个空的Visitor切片visitors。
 	var visitors []Visitor
+	//  使用filepath.Walk函数遍历路径下的文件和目录。
 	err := filepath.Walk(paths, func(path string, fi os.FileInfo, err error) error {
+		// 如果遍历过程中出现错误，则返回错误。
 		if err != nil {
 			return err
 		}
-
+		// 如果当前路径是一个目录：
 		if fi.IsDir() {
+			// 如果路径不是初始路径且不需要递归处理，则跳过该目录。
 			if path != paths && !recursive {
 				return filepath.SkipDir
 			}
-			return nil
-		}
-		// Don't check extension if the filepath was passed explicitly
-		if path != paths && ignoreFile(path, extensions) {
+			//  否则，继续遍历该目录下的文件和子目录。
 			return nil
 		}
 
+		// Don't check extension if the filepath was passed explicitly
+		// 如果当前路径是一个文件 如果路径不是初始路径且文件的扩展名被忽略，则跳过该文件。
+		if path != paths && ignoreFile(path, extensions) {
+			return nil
+		}
+		// 否则，创建一个FileVisitor对象，设置其Path字段为当前路径，并根据路径创建一个StreamVisitor对象。
 		visitor := &FileVisitor{
 			Path:          path,
 			StreamVisitor: NewStreamVisitor(nil, mapper, path, schema),
 		}
-
+		// 将创建的FileVisitor添加到visitors切片中。
 		visitors = append(visitors, visitor)
 		return nil
 	})
 
+	// 如果遍历过程中出现错误，则返回错误。
 	if err != nil {
 		return nil, err
 	}
+	// 返回visitors切片作为结果。
 	return visitors, nil
 }
 

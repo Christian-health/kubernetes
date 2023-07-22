@@ -32,19 +32,28 @@ import (
 
 // ErrMatchFunc can be used to filter errors that may not be true failures.
 type ErrMatchFunc func(error) bool
-
+/*
+	如下代码定义了Result结构体，用于处理Builder的执行结果。
+	Result结构体提供了一些辅助方法，用于处理Builder的执行结果。这些方法可以用于获取执行过程中的错误、访问处理后的资源信息等。
+	总的来说，Result结构体用于存储Builder的执行结果，并提供了一些方法来处理和访问这些结果。它包含了与执行结果相关的一些字段和方法，用于方便地处理Builder执行过程中的错误和资源信息。
+*/
 // Result contains helper methods for dealing with the outcome of a Builder.
 type Result struct {
+	// err：表示执行过程中的错误。
 	err     error
+	// visitor：执行Builder时使用的Visitor。
 	visitor Visitor
-
+	// sources：存储用于执行Builder的Visitor列表。
 	sources            []Visitor
+	// singleItemImplied：标志是否隐含只有一个资源。
 	singleItemImplied  bool
+	// targetsSingleItems：标志是否目标是单个资源。
 	targetsSingleItems bool
-
+	// mapper：用于映射对象的mapper。
 	mapper       *mapper
+	// ignoreErrors：用于忽略特定错误的utilerrors.Matcher列表。
 	ignoreErrors []utilerrors.Matcher
-
+	// info：存储Infos方法返回的Info列表。
 	// populated by a call to Infos
 	info []*Info
 }

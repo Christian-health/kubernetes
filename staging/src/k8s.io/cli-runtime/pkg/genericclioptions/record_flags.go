@@ -32,7 +32,14 @@ import (
 
 // ChangeCauseAnnotation is the annotation indicating a guess at "why" something was changed
 const ChangeCauseAnnotation = "kubernetes.io/change-cause"
-
+/*
+	如下代码定义了一个名为RecordFlags的结构体，它包含与"--record"操作相关的所有标志。
+	RecordFlags结构体包含以下字段：
+	- Record：一个指向bool类型的指针，用于指示记录标志的状态。通过修改该指针的值，调用者可以选择是否启用记录功能或重新绑定。
+	- changeCause：一个字符串，用于记录状态变更的原因。
+	在Kubernetes中，"--record"标志用于启用资源操作的记录功能。当启用记录功能时，Kubernetes会将资源操作的详细信息保存到资源的事件日志中，
+	包括操作类型、操作者、时间戳等。通过使用RecordFlags结构体，可以方便地管理与记录功能相关的标志，并记录状态变更的原因。
+*/
 // RecordFlags contains all flags associated with the "--record" operation
 type RecordFlags struct {
 	// Record indicates the state of the recording flag.  It is a pointer so a caller can opt out or rebind
@@ -112,7 +119,13 @@ type Recorder interface {
 	Record(runtime.Object) error
 	MakeRecordMergePatch(runtime.Object) ([]byte, error)
 }
-
+/*
+	上述代码定义了一个名为 `NoopRecorder` 的结构体，它是一个空记录器（Noop Recorder）。
+	在 Kubernetes 中，记录器（Recorder）用于记录集群中发生的事件和状态变化。它可以用于跟踪和记录重要的操作、故障和警报等信息，以便后续分析和故障排查。
+	`NoopRecorder` 结构体是一个空实现的记录器，它不执行任何操作。它被定义为一个空结构体，没有任何字段或方法。它的主要作用是作为一个“什么都不做”的占位符，可以在代码中返回它，以避免对空记录器进行切换或处理。
+	在某些情况下，当不需要记录事件或状态变化时，可以使用 `NoopRecorder`。例如，在测试代码或实现中，如果不关心记录器的具体实现，或者只需要一个空记录器来满足接口或函数的要求，就可以使用它。
+	总之，`NoopRecorder` 是一个空记录器的定义，它不执行任何操作，常用于占位或避免对空记录器进行处理的情况。
+*/
 // NoopRecorder does nothing.  It is a "do nothing" that can be returned so code doesn't switch on it.
 type NoopRecorder struct{}
 

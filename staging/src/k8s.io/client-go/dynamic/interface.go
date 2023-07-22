@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 )
 
-type Interface interface {
+type ,Interface interface {
 	Resource(resource schema.GroupVersionResource) NamespaceableResourceInterface
 }
 

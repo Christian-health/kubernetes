@@ -55,7 +55,11 @@ var (
 		- anywhere on the user's PATH
 		- begin with "kubectl-"
 `))
-
+	/*
+		ValidPluginFilenamePrefixes 是一个字符串数组，用于定义合法的插件文件名前缀。
+		在 Kubernetes 中，插件文件通常以 "kubectl-" 开头，后面跟着插件的名称。ValidPluginFilenamePrefixes 数组中的元素 "kubectl" 表示只有以 "kubectl-" 开头的文件名才会被认为是合法的插件文件。
+		这个定义可以确保只有符合命名规范的插件文件才会被识别和加载。这样可以避免误加载不符合规范的文件或文件名冲突的问题，并提供了一种标准的命名约定，使得插件的命名更加一致和可预测。
+	*/
 	ValidPluginFilenamePrefixes = []string{"kubectl"}
 )
 

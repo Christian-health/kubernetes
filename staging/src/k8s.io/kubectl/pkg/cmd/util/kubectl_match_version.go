@@ -35,7 +35,15 @@ import (
 const (
 	flagMatchBinaryVersion = "match-server-version"
 )
-
+/*
+	如下代码定义了一个名为MatchVersionFlags的结构体。该结构体用于设置“匹配服务器版本”的功能。
+	MatchVersionFlags结构体包含以下字段：
+		- Delegate：一个genericclioptions.RESTClientGetter类型的字段，用于获取REST客户端。这个字段允许将实际的REST客户端获取逻辑委托给其他对象。
+		- RequireMatchedServerVersion：一个布尔类型的字段，表示是否要求匹配服务器版本。如果设置为true，则在与服务器通信之前，客户端将检查其版本是否与服务器版本匹配。
+		- checkServerVersion：一个sync.Once类型的字段，用于确保只检查一次服务器版本。
+		- matchesServerVersionErr：一个error类型的字段，用于存储检查服务器版本时发生的错误。
+	MatchVersionFlags结构体的目的是为了在Kubernetes客户端中提供一种机制，用于检查客户端版本与服务器版本是否匹配。通过设置RequireMatchedServerVersion字段为true，可以启用这种匹配功能，并在与服务器通信之前执行版本检查。这可以确保客户端与服务器之间的版本兼容性，以避免潜在的兼容性问题。
+*/
 // MatchVersionFlags is for setting the "match server version" function.
 type MatchVersionFlags struct {
 	Delegate genericclioptions.RESTClientGetter

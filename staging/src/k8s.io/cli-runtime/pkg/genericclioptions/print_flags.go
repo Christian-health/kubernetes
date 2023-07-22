@@ -56,6 +56,21 @@ func IsNoCompatiblePrinterError(err error) bool {
 	return ok
 }
 
+/*
+	PrintFlags结构体包含了多个字段，如：
+	- JSONYamlPrintFlags：用于处理将资源以JSON或YAML格式打印的标志。
+	- NamePrintFlags：用于处理打印资源名称的标志。
+	- TemplatePrinterFlags：用于处理使用KubeTemplate模板打印的标志。
+	- TypeSetterPrinter：用于设置资源类型的打印器。
+	- OutputFormat：指向一个字符串的指针，表示输出的格式。
+	- OutputFlagSpecified：一个函数，用于指示用户是否明确请求了特定类型的输出。
+	使用PrintFlags，可以根据用户提供的标志值选择相应的打印器，并以所需的格式将资源打印输出。
+	例如，可以使用PrintFlags来将资源以JSON或YAML格式输出，或者根据用户指定的名称打印特定资源的详细信息。
+
+	  kubectl get
+[(-o|--output=)json|yaml|name|go-template|go-template-file|template|templatefile|jsonpath|jsonpath-as-json|jsonpath-file|custom-columns|custom-columns-file|wide]
+(TYPE[.VERSION][.GROUP] [NAME | -l label] | TYPE[.VERSION][.GROUP]/NAME ...) [flags] [options]
+*/
 // PrintFlags composes common printer flag structs
 // used across all commands, and provides a method
 // of retrieving a known printer based on flag values provided.

@@ -28,7 +28,15 @@ const (
 	kubectlCommandHeader = "Kubectl-Command"
 	kubectlSessionHeader = "Kubectl-Session"
 )
-
+/*
+	这段代码定义了一个名为CommandHeaderRoundTripper的结构体。CommandHeaderRoundTripper是一个包装器，
+	用于在标准的RoundTripper周围添加一层，以在委托之前添加请求头。它实现了Go标准库的"http.RoundTripper"接口。
+	CommandHeaderRoundTripper结构体包含以下字段：
+	- Delegate：一个http.RoundTripper类型的字段，表示要委托的标准RoundTripper。该字段用于处理实际的HTTP请求和响应。
+	- Headers：一个map[string]string类型的字段，表示要添加到请求中的头部信息。该字段允许用户指定自定义的请求头，例如命令头等。
+	CommandHeaderRoundTripper结构体的目的是为了在标准的RoundTripper之前添加自定义的请求头。通过实现http.RoundTripper接口，
+	可以将CommandHeaderRoundTripper作为HTTP客户端的一部分，以在发送请求之前自动添加请求头。这样可以实现在HTTP请求过程中自动添加自定义头部的功能。
+*/
 // CommandHeaderRoundTripper adds a layer around the standard
 // round tripper to add Request headers before delegation. Implements
 // the go standard library "http.RoundTripper" interface.

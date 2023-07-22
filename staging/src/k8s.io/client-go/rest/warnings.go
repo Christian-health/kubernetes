@@ -80,7 +80,13 @@ type warningWriter struct {
 	writtenCount int
 	written      map[string]struct{}
 }
-
+/*
+	如下代码定义了一个名为`WarningWriterOptions`的结构体类型，在Kubernetes（k8s）中用于配置警告写入器的选项。
+	`Deduplicate`是一个布尔类型的字段，用于指示是否对警告消息进行去重处理。如果设置为`true`，则相同的警告消息只会被写入一次。需要注意的是，在处理大量警告消息的长时间运行的进程中，启用去重功能可能会增加内存使用量。
+	`Color`是一个布尔类型的字段，用于指示警告输出是否可以包含ANSI颜色代码。如果设置为`true`，则警告输出中可以包含颜色代码，以便在支持颜色输出的终端上显示不同的颜色。
+	这些选项用于在创建警告写入器时进行配置，以便根据需要进行去重和颜色输出的处理。
+	因此，这段代码的含义是定义了一个结构体类型，其中包含了配置警告写入器选项的字段。这些选项可以用于控制警告写入器的行为，例如是否进行去重处理和是否启用颜色输出。
+*/
 // WarningWriterOptions controls the behavior of a WarningHandler constructed using NewWarningWriter()
 type WarningWriterOptions struct {
 	// Deduplicate indicates a given warning message should only be written once.
